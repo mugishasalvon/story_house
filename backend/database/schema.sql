@@ -1,0 +1,62 @@
+CREATE DATABASE IF NOT EXISTS story_house
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+
+USE story_house;
+
+CREATE TABLE IF NOT EXISTS admin (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  username VARCHAR(80) NOT NULL,
+  email VARCHAR(254) NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_admin_username (username),
+  UNIQUE KEY uq_admin_email (email)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS story (
+  id VARCHAR(191) NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  genre VARCHAR(255) NOT NULL DEFAULT '',
+  year VARCHAR(8) NOT NULL DEFAULT '',
+  rating DECIMAL(3,1) NOT NULL DEFAULT 0.0,
+  image MEDIUMTEXT NOT NULL,
+  accent CHAR(7) NOT NULL DEFAULT '#b6c09b',
+  description TEXT NOT NULL,
+  is_new BOOLEAN NOT NULL DEFAULT FALSE,
+  display_order INT NOT NULL DEFAULT 0,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_story_display_order (display_order, created_at)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS season (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  story_id VARCHAR(191) NOT NULL,
+  season_number INT UNSIGNED NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_season_story_number (story_id, season_number),
+  CONSTRAINT fk_season_story
+    FOREIGN KEY (story_id) REFERENCES story (id)
+    ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS episode (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  season_id BIGINT UNSIGNED NOT NULL,
+  episode_number INT UNSIGNED NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  duration VARCHAR(40) NOT NULL DEFAULT '',
+  summary TEXT NOT NULL,
+  image VARCHAR(1024) NOT NULL DEFAULT '',
+  content LONGTEXT NOT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_episode_season_number (season_id, episode_number),
+  CONSTRAINT fk_episode_season
+    FOREIGN KEY (season_id) REFERENCES season (id)
+    ON DELETE CASCADE
+) ENGINE=InnoDB;
